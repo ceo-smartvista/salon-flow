@@ -558,11 +558,11 @@ export default function BookingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
               <div>
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
-                  Step 4 of 4
-                </span>
-                <h2 className="text-3xl font-bold text-stone-900 tracking-tight">Complete Your Booking</h2>
-                <p className="text-stone-500 mt-2">Enter your details to confirm the appointment.</p>
+                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
+                   Step {hasServices ? "4 of 4" : "2 of 2"}
+                 </span>
+                 <h2 className="text-3xl font-bold text-stone-900 tracking-tight">{hasServices ? "Complete Your Booking" : "Complete Your Order"}</h2>
+                 <p className="text-stone-500 mt-2">{hasServices ? "Enter your details to confirm the appointment." : "Enter your details to place your order."}</p>
               </div>
 
               <div className="space-y-3">
