@@ -29,6 +29,8 @@ const queryClient = new QueryClient();
 
 function DashboardRouter() {
   const { isSuperAdmin, isLoading } = useSuperAdmin();
+  const [showSplash, setShowSplash] = useState(true);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -36,6 +38,16 @@ function DashboardRouter() {
       </div>
     );
   }
+
+  if (showSplash) {
+    return (
+      <SplashScreen
+        role={isSuperAdmin ? "super_admin" : "admin"}
+        onComplete={() => setShowSplash(false)}
+      />
+    );
+  }
+
   if (isSuperAdmin) return <Navigate to="/super-admin" replace />;
   return <Dashboard />;
 }
