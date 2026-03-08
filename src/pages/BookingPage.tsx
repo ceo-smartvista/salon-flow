@@ -348,8 +348,8 @@ export default function BookingPage() {
         {/* Step: Confirmed */}
         {step === "confirmed" && (
           <div className="animate-fade-in text-center py-16 max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+            <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-6">
+              <Check className="w-8 h-8 text-success" />
             </div>
             <h2 className="text-2xl font-display font-bold mb-2">Booking Confirmed!</h2>
             <p className="text-muted-foreground mb-6">
