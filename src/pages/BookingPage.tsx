@@ -3,10 +3,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, setHours, setMinutes, isBefore, addMinutes } from "date-fns";
 import {
-  Scissors, Clock, ChevronRight, Check, ArrowLeft, Sparkles,
+  Scissors, Clock, ChevronRight, Check, ArrowLeft,
   User, CalendarDays, MapPin, Phone, Mail, MessageSquare, Star,
-  ShoppingBag, Plus, Minus, X, Heart, Zap, Crown, Gem, Palette,
-  HandMetal, Droplets, Package,
+  ShoppingBag, Plus, X, Sparkles, Heart, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,27 +13,26 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+import heroFallback from "@/assets/hero-salon.jpg";
+import catHair from "@/assets/cat-hair.jpg";
+import catSkin from "@/assets/cat-skin.jpg";
+import catNails from "@/assets/cat-nails.jpg";
+import catProducts from "@/assets/cat-products.jpg";
+
 type Step = "browse" | "staff" | "datetime" | "details" | "confirmed";
 
-const CATEGORY_ICONS: Record<string, typeof Scissors> = {
-  Hair: Scissors,
-  Skin: Droplets,
-  Nails: Palette,
-  Products: Package,
+const CATEGORY_IMAGES: Record<string, string> = {
+  Hair: catHair,
+  Skin: catSkin,
+  Nails: catNails,
+  Products: catProducts,
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Hair: "from-violet-500/20 to-purple-500/20 border-violet-500/20",
-  Skin: "from-rose-500/20 to-pink-500/20 border-rose-500/20",
-  Nails: "from-amber-500/20 to-orange-500/20 border-amber-500/20",
-  Products: "from-emerald-500/20 to-teal-500/20 border-emerald-500/20",
-};
-
-const CATEGORY_ACCENTS: Record<string, string> = {
-  Hair: "text-violet-600 dark:text-violet-400",
-  Skin: "text-rose-600 dark:text-rose-400",
-  Nails: "text-amber-600 dark:text-amber-400",
-  Products: "text-emerald-600 dark:text-emerald-400",
+const CATEGORY_GRADIENTS: Record<string, string> = {
+  Hair: "from-violet-600 to-purple-700",
+  Skin: "from-rose-500 to-pink-600",
+  Nails: "from-amber-500 to-orange-600",
+  Products: "from-emerald-500 to-teal-600",
 };
 
 export default function BookingPage() {
@@ -46,7 +44,6 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [clientForm, setClientForm] = useState({ name: "", phone: "", email: "", notes: "" });
   const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [cartOpen, setCartOpen] = useState(false);
 
   const { data: salon } = useQuery({
     queryKey: ["public-salon"],
@@ -78,13 +75,8 @@ export default function BookingPage() {
       if (!selectedDate || !selectedStaff) return [];
       const dayStart = format(selectedDate, "yyyy-MM-dd'T'00:00:00");
       const dayEnd = format(selectedDate, "yyyy-MM-dd'T'23:59:59");
-      const { data } = await supabase
-        .from("appointments")
-        .select("start_time, end_time")
-        .eq("staff_id", selectedStaff.id)
-        .gte("start_time", dayStart)
-        .lte("start_time", dayEnd)
-        .neq("status", "cancelled");
+      const { data } = await supabase.from("appointments").select("start_time, end_time")
+        .eq("staff_id", selectedStaff.id).gte("start_time", dayStart).lte("start_time", dayEnd).neq("status", "cancelled");
       return data ?? [];
     },
     enabled: !!selectedDate && !!selectedStaff,
@@ -96,15 +88,11 @@ export default function BookingPage() {
   const bookMutation = useMutation({
     mutationFn: async () => {
       let clientId: string;
-      const { data: existingClient } = await supabase
-        .from("clients").select("id").eq("phone", clientForm.phone).limit(1).maybeSingle();
-      if (existingClient) {
-        clientId = existingClient.id;
-      } else {
-        const { data: newClient, error: clientErr } = await supabase
-          .from("clients")
-          .insert({ name: clientForm.name, phone: clientForm.phone, email: clientForm.email || null })
-          .select("id").single();
+      const { data: existingClient } = await supabase.from("clients").select("id").eq("phone", clientForm.phone).limit(1).maybeSingle();
+      if (existingClient) { clientId = existingClient.id; }
+      else {
+        const { data: newClient, error: clientErr } = await supabase.from("clients")
+          .insert({ name: clientForm.name, phone: clientForm.phone, email: clientForm.email || null }).select("id").single();
         if (clientErr) throw clientErr;
         clientId = newClient.id;
       }
@@ -137,8 +125,7 @@ export default function BookingPage() {
         if (slotEnd.getHours() > 19) continue;
         if (isBefore(slotStart, now)) continue;
         const conflict = existingAppointments?.some((apt) => {
-          const aptStart = new Date(apt.start_time);
-          const aptEnd = new Date(apt.end_time);
+          const aptStart = new Date(apt.start_time); const aptEnd = new Date(apt.end_time);
           return slotStart < aptEnd && slotEnd > aptStart;
         });
         if (!conflict) slots.push(`${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
@@ -168,31 +155,28 @@ export default function BookingPage() {
       return [...prev, svc];
     });
   };
-
   const isSelected = (id: string) => selectedServices.some((s) => s.id === id);
 
   const resetBooking = () => {
-    setStep("browse");
-    setSelectedServices([]);
-    setSelectedStaff(null);
-    setSelectedDate(undefined);
-    setSelectedTime("");
-    setClientForm({ name: "", phone: "", email: "", notes: "" });
+    setStep("browse"); setSelectedServices([]); setSelectedStaff(null);
+    setSelectedDate(undefined); setSelectedTime(""); setClientForm({ name: "", phone: "", email: "", notes: "" });
     setActiveCategory("All");
-    setCartOpen(false);
   };
 
+  const heroImage = (salon as any)?.hero_image || heroFallback;
+
+  // ===== BOOKING DISABLED =====
   if (salon && !salon.online_booking) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-            <Scissors className="w-10 h-10 text-primary" />
+          <div className="w-20 h-20 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-6">
+            <Scissors className="w-10 h-10 text-stone-400" />
           </div>
-          <h1 className="text-3xl font-bold mb-3">Online Booking Unavailable</h1>
-          <p className="text-muted-foreground text-lg">This salon is not currently accepting online bookings.</p>
+          <h1 className="text-3xl font-bold text-stone-900 mb-3">Online Booking Unavailable</h1>
+          <p className="text-stone-500 text-lg">This salon is not currently accepting online bookings.</p>
           {salon.phone && (
-            <a href={`tel:${salon.phone}`} className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity">
+            <a href={`tel:${salon.phone}`} className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold hover:bg-stone-800 transition-colors">
               <Phone className="w-4 h-4" />Call {salon.phone}
             </a>
           )}
@@ -202,176 +186,191 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-stone-50" style={{ colorScheme: "light" }}>
       {/* ===== HERO ===== */}
-      <header className="relative overflow-hidden">
-        {(salon as any)?.hero_image ? (
-          <>
-            <img src={(salon as any).hero_image} alt="" className="absolute inset-0 w-full h-full object-cover scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background" />
-          </>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-accent/8" />
-        )}
-        <div className={cn(
-          "relative max-w-6xl mx-auto px-4 sm:px-6",
-          (salon as any)?.hero_image ? "pt-16 pb-20 sm:pt-20 sm:pb-28" : "pt-10 pb-14 sm:pt-14 sm:pb-20"
-        )}>
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/15 border border-primary/20 mb-5">
-              <Zap className="w-3.5 h-3.5 text-primary" />
-              <span className={cn("text-xs font-semibold tracking-wide", (salon as any)?.hero_image ? "text-white/90" : "text-primary")}>BOOK ONLINE • INSTANT CONFIRMATION</span>
+      <header className="relative h-[420px] sm:h-[480px] lg:h-[520px] overflow-hidden">
+        <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
+        
+        {/* Top bar */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                <Scissors className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-white/90 font-semibold text-lg tracking-tight">{salon?.name ?? "Salon"}</span>
             </div>
-            <h1 className={cn(
-              "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]",
-              (salon as any)?.hero_image ? "text-white" : "text-foreground"
-            )}>
-              {salon?.name ?? "Book Your Appointment"}
+            {salon?.phone && (
+              <a href={`tel:${salon.phone}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md text-white text-sm font-medium hover:bg-white/25 transition-colors">
+                <Phone className="w-3.5 h-3.5" />{salon.phone}
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Hero content */}
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white/90 text-xs font-medium tracking-wide uppercase">Open for Booking</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05] max-w-2xl">
+              Your Beauty,{" "}
+              <span className="bg-gradient-to-r from-amber-200 to-yellow-100 bg-clip-text text-transparent">Our Passion</span>
             </h1>
-            <p className={cn(
-              "text-lg sm:text-xl mt-4 max-w-lg",
-              (salon as any)?.hero_image ? "text-white/75" : "text-muted-foreground"
-            )}>
-              Premium beauty services crafted just for you. Browse, select, and book in minutes.
+            <p className="text-white/70 text-lg sm:text-xl mt-3 max-w-lg">
+              Premium services tailored to perfection. Book your appointment in just a few clicks.
             </p>
-            <div className="flex flex-wrap items-center gap-4 mt-6">
-              {salon?.address && (
-                <span className={cn("flex items-center gap-1.5 text-sm", (salon as any)?.hero_image ? "text-white/70" : "text-muted-foreground")}>
-                  <MapPin className="w-4 h-4" />{salon.address}
-                </span>
-              )}
-              {salon?.phone && (
-                <a href={`tel:${salon.phone}`} className={cn("flex items-center gap-1.5 text-sm transition-colors", (salon as any)?.hero_image ? "text-white/70 hover:text-white" : "text-muted-foreground hover:text-primary")}>
-                  <Phone className="w-4 h-4" />{salon.phone}
-                </a>
-              )}
-            </div>
+            {salon?.address && (
+              <div className="flex items-center gap-1.5 mt-4 text-white/60 text-sm">
+                <MapPin className="w-3.5 h-3.5" />{salon.address}
+              </div>
+            )}
           </div>
         </div>
       </header>
 
+      {/* ===== CATEGORY CARDS ===== */}
+      {step === "browse" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {categories.filter(c => c !== "All").map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(activeCategory === cat ? "All" : cat)}
+                className={cn(
+                  "relative h-28 sm:h-32 rounded-2xl overflow-hidden group transition-all duration-300",
+                  activeCategory === cat ? "ring-2 ring-stone-900 ring-offset-2 ring-offset-stone-50 shadow-xl scale-[1.02]" : "shadow-lg hover:shadow-xl hover:scale-[1.01]"
+                )}
+              >
+                <img src={CATEGORY_IMAGES[cat] ?? catHair} alt={cat} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div className={cn("absolute inset-0 bg-gradient-to-t opacity-80", CATEGORY_GRADIENTS[cat] ?? "from-stone-600 to-stone-800")} />
+                <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
+                  <span className="text-lg sm:text-xl font-bold tracking-tight">{cat}</span>
+                  <span className="text-white/70 text-xs mt-0.5">{services?.filter(s => s.category === cat).length ?? 0} services</span>
+                </div>
+                {activeCategory === cat && (
+                  <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white flex items-center justify-center z-10">
+                    <Check className="w-3.5 h-3.5 text-stone-900" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ===== BROWSE STEP ===== */}
       {step === "browse" && (
         <>
-          {/* Sticky nav bar */}
-          <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between h-14">
-                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1">
-                  {categories.map((cat) => {
-                    const Icon = cat === "All" ? Sparkles : CATEGORY_ICONS[cat] ?? Sparkles;
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={cn(
-                          "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200",
-                          activeCategory === cat
-                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Cart button */}
-                <button
-                  onClick={() => setCartOpen(!cartOpen)}
-                  className="relative flex items-center gap-2 px-4 py-2 rounded-full bg-card border hover:border-primary/40 transition-colors ml-3"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span className="text-sm font-semibold">{currency}{cartTotal.toLocaleString()}</span>
-                  {selectedServices.length > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-md">
-                      {selectedServices.length}
-                    </span>
-                  )}
-                </button>
+          {/* Filter pills */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border",
+                      activeCategory === cat
+                        ? "bg-stone-900 text-white border-stone-900 shadow-md"
+                        : "bg-white text-stone-600 border-stone-200 hover:border-stone-300 hover:text-stone-900"
+                    )}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
+              <span className="text-sm text-stone-500 hidden sm:block">{filteredServices.length} services</span>
             </div>
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 lg:pb-12">
             <div className="flex gap-8">
-              {/* Main grid */}
+              {/* Service grid */}
               <div className="flex-1 min-w-0">
                 {filteredServices.length === 0 ? (
-                  <div className="bg-card rounded-2xl border p-16 text-center">
-                    <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-lg font-semibold">No items found</p>
-                    <p className="text-muted-foreground mt-1">Try selecting a different category.</p>
+                  <div className="bg-white rounded-2xl border border-stone-200 p-16 text-center shadow-sm">
+                    <Scissors className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-stone-700">No services found</p>
+                    <p className="text-stone-400 mt-1">Try selecting a different category.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredServices.map((svc) => {
                       const selected = isSelected(svc.id);
-                      const CatIcon = CATEGORY_ICONS[svc.category] ?? Sparkles;
-                      const colorClass = CATEGORY_COLORS[svc.category] ?? "from-primary/20 to-accent/20 border-primary/20";
-                      const accentClass = CATEGORY_ACCENTS[svc.category] ?? "text-primary";
+                      const catImage = CATEGORY_IMAGES[svc.category] ?? catHair;
                       return (
                         <div
                           key={svc.id}
                           className={cn(
-                            "group relative bg-card rounded-2xl border overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
-                            selected && "ring-2 ring-primary border-primary shadow-lg shadow-primary/10"
+                            "group bg-white rounded-2xl overflow-hidden transition-all duration-300 border",
+                            selected
+                              ? "border-stone-900 shadow-xl ring-1 ring-stone-900/10"
+                              : "border-stone-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5"
                           )}
                         >
-                          {/* Colored top bar */}
-                          <div className={cn("h-24 bg-gradient-to-br flex items-center justify-center relative", colorClass)}>
-                            <CatIcon className={cn("w-10 h-10 opacity-40", accentClass)} />
+                          {/* Image */}
+                          <div className="relative h-40 overflow-hidden">
+                            <img src={catImage} alt={svc.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                            
                             {svc.is_product && (
-                              <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur text-[10px] font-bold uppercase tracking-wider text-foreground">Product</span>
+                              <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur text-[10px] font-bold uppercase tracking-wider text-stone-700">Product</span>
                             )}
+                            
                             {selected && (
-                              <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+                              <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center shadow-lg animate-scale-in">
                                 <Check className="w-4 h-4" />
                               </div>
                             )}
+
+                            <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ display: selected ? "none" : undefined }}>
+                              <Heart className="w-4 h-4 text-stone-500" />
+                            </button>
+
+                            {/* Price tag */}
+                            <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg bg-white shadow-lg">
+                              <span className="font-bold text-stone-900">{currency}{svc.price.toLocaleString()}</span>
+                            </div>
                           </div>
 
+                          {/* Content */}
                           <div className="p-4">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div>
-                                <p className="font-semibold text-sm leading-tight">{svc.name}</p>
-                                <span className={cn("text-[11px] font-semibold uppercase tracking-wider mt-1 inline-block", accentClass)}>{svc.category}</span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 mb-4">
+                            <h3 className="font-semibold text-stone-900 text-[15px] leading-tight">{svc.name}</h3>
+                            <div className="flex items-center gap-3 mt-2">
+                              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">{svc.category}</span>
                               {!svc.is_product && (
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Clock className="w-3 h-3" />{svc.duration} min
-                                </span>
+                                <>
+                                  <span className="w-1 h-1 rounded-full bg-stone-300" />
+                                  <span className="flex items-center gap-1 text-xs text-stone-400">
+                                    <Clock className="w-3 h-3" />{svc.duration} min
+                                  </span>
+                                </>
                               )}
-                              <div className="flex items-center gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star key={i} className="w-2.5 h-2.5 fill-warning text-warning" />
-                                ))}
-                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 mt-2">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              ))}
+                              <span className="text-xs text-stone-400 ml-1">5.0</span>
                             </div>
 
-                            <div className="flex items-center justify-between">
-                              <span className="text-xl font-bold text-foreground">{currency}{svc.price.toLocaleString()}</span>
-                              <button
-                                onClick={() => toggleService(svc)}
-                                className={cn(
-                                  "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
-                                  selected
-                                    ? "bg-primary/10 text-primary hover:bg-destructive/10 hover:text-destructive"
-                                    : "bg-primary text-primary-foreground hover:opacity-90 shadow-md shadow-primary/20"
-                                )}
-                              >
-                                {selected ? (
-                                  <><X className="w-3.5 h-3.5" />Remove</>
-                                ) : (
-                                  <><Plus className="w-3.5 h-3.5" />Add</>
-                                )}
-                              </button>
-                            </div>
+                            <button
+                              onClick={() => toggleService(svc)}
+                              className={cn(
+                                "w-full mt-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5",
+                                selected
+                                  ? "bg-stone-100 text-stone-600 hover:bg-red-50 hover:text-red-600"
+                                  : "bg-stone-900 text-white hover:bg-stone-800 shadow-sm"
+                              )}
+                            >
+                              {selected ? <><X className="w-3.5 h-3.5" />Remove</> : <><Plus className="w-3.5 h-3.5" />Add to Booking</>}
+                            </button>
                           </div>
                         </div>
                       );
@@ -382,13 +381,10 @@ export default function BookingPage() {
 
               {/* Desktop sidebar cart */}
               <div className="hidden lg:block w-80 flex-shrink-0">
-                <div className="sticky top-20">
+                <div className="sticky top-6">
                   <CartPanel
-                    selectedServices={selectedServices}
-                    currency={currency}
-                    cartTotal={cartTotal}
-                    hasServices={hasServices}
-                    onRemove={(id) => setSelectedServices((prev) => prev.filter((s) => s.id !== id))}
+                    selectedServices={selectedServices} currency={currency} cartTotal={cartTotal}
+                    hasServices={hasServices} onRemove={(id) => setSelectedServices((prev) => prev.filter((s) => s.id !== id))}
                     onProceed={() => setStep("staff")}
                   />
                 </div>
@@ -398,15 +394,15 @@ export default function BookingPage() {
 
           {/* Mobile bottom bar */}
           {selectedServices.length > 0 && (
-            <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-card/95 backdrop-blur-xl border-t p-4 shadow-2xl">
+            <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-xl border-t border-stone-200 p-4 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)]">
               <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
                 <div>
-                  <p className="text-xs text-muted-foreground">{selectedServices.length} item{selectedServices.length > 1 ? "s" : ""} selected</p>
-                  <p className="text-xl font-bold">{currency}{cartTotal.toLocaleString()}</p>
+                  <p className="text-xs text-stone-500">{selectedServices.length} item{selectedServices.length > 1 ? "s" : ""}</p>
+                  <p className="text-xl font-bold text-stone-900">{currency}{cartTotal.toLocaleString()}</p>
                 </div>
                 <Button
                   size="lg"
-                  className="rounded-xl font-bold text-base px-8 shadow-lg shadow-primary/25"
+                  className="rounded-full font-bold text-base px-8 bg-stone-900 text-white hover:bg-stone-800 shadow-lg"
                   disabled={!hasServices}
                   onClick={() => setStep("staff")}
                 >
@@ -420,35 +416,44 @@ export default function BookingPage() {
 
       {/* ===== STAFF STEP ===== */}
       {step === "staff" && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 animate-in fade-in slide-in-from-right-4 duration-300">
-          <button onClick={() => setStep("browse")} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group mb-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+          <button onClick={() => setStep("browse")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to services
           </button>
 
-          <StepHeader
-            title="Choose your stylist"
-            subtitle={`For ${selectedServices.map((s) => s.name).join(", ")}`}
-            icon={Crown}
-          />
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
+              Step 2 of 4
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">Choose Your Expert</h2>
+            <p className="text-stone-500 mt-2 text-lg">Select your preferred professional</p>
+          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {staff?.map((member) => (
               <button
                 key={member.id}
                 onClick={() => { setSelectedStaff(member); setStep("datetime"); }}
-                className="group flex flex-col items-center gap-3 p-6 rounded-2xl border bg-card hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                className="group bg-white rounded-2xl border border-stone-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
               >
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/40 flex items-center justify-center text-3xl font-bold text-primary group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-primary/20 transition-all duration-200">
-                  {member.name.charAt(0)}
+                {/* Avatar area */}
+                <div className="h-32 bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center relative">
+                  <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center text-3xl font-bold text-stone-700 group-hover:scale-110 transition-transform duration-300">
+                    {member.name.charAt(0)}
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="font-semibold group-hover:text-primary transition-colors">{member.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{member.role}</p>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-warning text-warning" />
-                  ))}
+                <div className="p-5 text-center">
+                  <h3 className="font-bold text-stone-900 text-lg">{member.name}</h3>
+                  <p className="text-stone-500 text-sm mt-0.5">{member.role}</p>
+                  <div className="flex items-center justify-center gap-0.5 mt-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="text-xs text-stone-400 ml-1.5">5.0</span>
+                  </div>
+                  <div className="mt-4 py-2 rounded-xl bg-stone-50 text-sm font-medium text-stone-600 group-hover:bg-stone-900 group-hover:text-white transition-colors">
+                    Book with {member.name.split(" ")[0]}
+                  </div>
                 </div>
               </button>
             ))}
@@ -458,33 +463,36 @@ export default function BookingPage() {
 
       {/* ===== DATETIME STEP ===== */}
       {step === "datetime" && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 animate-in fade-in slide-in-from-right-4 duration-300">
-          <button onClick={() => setStep("staff")} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group mb-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+          <button onClick={() => setStep("staff")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to stylists
           </button>
 
-          <StepHeader
-            title="Pick your perfect time"
-            subtitle={`${primaryService?.name} with ${selectedStaff?.name} • ${totalDuration || primaryService?.duration} min`}
-            icon={CalendarDays}
-          />
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
+              Step 3 of 4
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">Pick Your Time</h2>
+            <p className="text-stone-500 mt-2 text-lg">
+              {primaryService?.name} with {selectedStaff?.name}
+            </p>
+          </div>
 
-          {/* Mini summary pills */}
-          <div className="flex flex-wrap gap-2 mt-6">
+          {/* Selection pills */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
             {selectedServices.map((svc) => (
-              <span key={svc.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium">
-                <Check className="w-3 h-3 text-primary" />{svc.name}
-                <span className="text-muted-foreground">•</span>
-                <span className="font-bold text-primary">{currency}{svc.price}</span>
+              <span key={svc.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stone-200 text-xs font-medium text-stone-700 shadow-sm">
+                <Check className="w-3 h-3 text-emerald-500" />{svc.name}
+                <span className="text-stone-400">•</span>
+                <span className="font-bold">{currency}{svc.price}</span>
               </span>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-8">
-            <div className="lg:col-span-2 bg-card rounded-2xl border p-5 flex justify-center">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-stone-200 p-5 flex justify-center shadow-sm">
               <Calendar
-                mode="single"
-                selected={selectedDate}
+                mode="single" selected={selectedDate}
                 onSelect={(d) => { setSelectedDate(d); setSelectedTime(""); }}
                 disabled={(date) => isBefore(date, addDays(new Date(), -1)) || date.getDay() === 0}
                 className="pointer-events-auto"
@@ -492,8 +500,8 @@ export default function BookingPage() {
             </div>
             <div className="lg:col-span-3">
               {selectedDate ? (
-                <div className="bg-card rounded-2xl border p-5">
-                  <h4 className="font-bold text-lg mb-4">{format(selectedDate, "EEEE, MMMM d")}</h4>
+                <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+                  <h4 className="font-bold text-stone-900 text-lg mb-4">{format(selectedDate, "EEEE, MMMM d")}</h4>
                   {timeSlots.length > 0 ? (
                     <>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -502,40 +510,38 @@ export default function BookingPage() {
                           const period = h < 12 ? "AM" : "PM";
                           const display12 = `${h > 12 ? h - 12 : h === 0 ? 12 : h}:${slot.split(":")[1]}`;
                           return (
-                            <button
-                              key={slot}
-                              onClick={() => setSelectedTime(slot)}
+                            <button key={slot} onClick={() => setSelectedTime(slot)}
                               className={cn(
                                 "py-3 px-3 rounded-xl border text-sm font-medium transition-all duration-200",
                                 selectedTime === slot
-                                  ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/25 scale-[1.02]"
-                                  : "bg-card hover:border-primary/40 hover:shadow-sm"
+                                  ? "bg-stone-900 text-white border-stone-900 shadow-md scale-[1.02]"
+                                  : "bg-white border-stone-200 text-stone-700 hover:border-stone-400 hover:shadow-sm"
                               )}
                             >
                               <span className="font-semibold">{display12}</span>
-                              <span className="text-xs opacity-70 ml-1">{period}</span>
+                              <span className="text-xs opacity-60 ml-1">{period}</span>
                             </button>
                           );
                         })}
                       </div>
                       {selectedTime && (
-                        <Button className="w-full mt-5 h-12 text-base font-semibold rounded-xl shadow-md shadow-primary/20" onClick={() => setStep("details")}>
+                        <Button className="w-full mt-5 h-12 text-base font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 shadow-md" onClick={() => setStep("details")}>
                           Continue to Details <ChevronRight className="w-4 h-4 ml-1" />
                         </Button>
                       )}
                     </>
                   ) : (
                     <div className="py-12 text-center">
-                      <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground">No available slots for this date.</p>
+                      <CalendarDays className="w-8 h-8 text-stone-300 mx-auto mb-3" />
+                      <p className="text-stone-500">No available slots for this date.</p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="bg-card rounded-2xl border p-5 flex flex-col items-center justify-center py-16">
-                  <CalendarDays className="w-10 h-10 text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground font-medium">Select a date</p>
-                  <p className="text-xs text-muted-foreground mt-1">Choose from the calendar to see available times</p>
+                <div className="bg-white rounded-2xl border border-stone-200 p-5 flex flex-col items-center justify-center py-16 shadow-sm">
+                  <CalendarDays className="w-10 h-10 text-stone-300 mb-3" />
+                  <p className="text-stone-600 font-medium">Select a date</p>
+                  <p className="text-xs text-stone-400 mt-1">Choose from the calendar</p>
                 </div>
               )}
             </div>
@@ -545,55 +551,63 @@ export default function BookingPage() {
 
       {/* ===== DETAILS STEP ===== */}
       {step === "details" && (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 animate-in fade-in slide-in-from-right-4 duration-300">
-          <button onClick={() => setStep("datetime")} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group mb-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+          <button onClick={() => setStep("datetime")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to schedule
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
-              <StepHeader title="Complete your booking" subtitle="Enter your details to confirm." icon={User} />
+              <div>
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
+                  Step 4 of 4
+                </span>
+                <h2 className="text-3xl font-bold text-stone-900 tracking-tight">Complete Your Booking</h2>
+                <p className="text-stone-500 mt-2">Enter your details to confirm the appointment.</p>
+              </div>
 
-              <div className="space-y-4 mt-6">
+              <div className="space-y-3">
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input className="pl-11 h-13 rounded-xl text-base" placeholder="Full Name *" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                  <input className="w-full h-13 pl-11 pr-4 rounded-xl border border-stone-200 bg-white text-stone-900 text-base placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 transition-all" placeholder="Full Name *" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} />
                 </div>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input className="pl-11 h-13 rounded-xl text-base" placeholder="Phone Number *" value={clientForm.phone} onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })} />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                  <input className="w-full h-13 pl-11 pr-4 rounded-xl border border-stone-200 bg-white text-stone-900 text-base placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 transition-all" placeholder="Phone Number *" value={clientForm.phone} onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })} />
                 </div>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input className="pl-11 h-13 rounded-xl text-base" placeholder="Email (optional)" type="email" value={clientForm.email} onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })} />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                  <input className="w-full h-13 pl-11 pr-4 rounded-xl border border-stone-200 bg-white text-stone-900 text-base placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 transition-all" placeholder="Email (optional)" type="email" value={clientForm.email} onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })} />
                 </div>
                 <div className="relative">
-                  <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-muted-foreground" />
-                  <Input className="pl-11 h-13 rounded-xl text-base" placeholder="Special requests (optional)" value={clientForm.notes} onChange={(e) => setClientForm({ ...clientForm, notes: e.target.value })} />
+                  <MessageSquare className="absolute left-4 top-3.5 w-4 h-4 text-stone-400" />
+                  <input className="w-full h-13 pl-11 pr-4 rounded-xl border border-stone-200 bg-white text-stone-900 text-base placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 transition-all" placeholder="Special requests (optional)" value={clientForm.notes} onChange={(e) => setClientForm({ ...clientForm, notes: e.target.value })} />
                 </div>
               </div>
 
-              <Button
-                className="w-full h-14 text-base font-bold rounded-xl shadow-lg shadow-primary/25 mt-4"
+              <button
+                className="w-full h-14 rounded-xl bg-stone-900 text-white text-base font-bold hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg flex items-center justify-center gap-2"
                 disabled={!clientForm.name || !clientForm.phone || bookMutation.isPending}
                 onClick={() => bookMutation.mutate()}
               >
                 {bookMutation.isPending ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />Booking...
-                  </span>
+                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Booking...</>
                 ) : (
                   <>Confirm & Book • {currency}{cartTotal.toLocaleString()}</>
                 )}
-              </Button>
-              <p className="text-xs text-center text-muted-foreground">By booking, you agree to our cancellation policy.</p>
+              </button>
+
+              <div className="flex items-center justify-center gap-6 text-xs text-stone-400">
+                <span className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" />Secure booking</span>
+                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" />Instant confirmation</span>
+              </div>
             </div>
 
             {/* Order summary */}
             <div className="lg:col-span-2">
-              <div className="bg-card rounded-2xl border overflow-hidden sticky top-20">
-                <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-5 py-4 border-b">
-                  <p className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+              <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden sticky top-6 shadow-sm">
+                <div className="bg-stone-50 px-5 py-4 border-b border-stone-200">
+                  <p className="text-sm font-bold text-stone-700 uppercase tracking-wider flex items-center gap-2">
                     <ShoppingBag className="w-4 h-4" />Order Summary
                   </p>
                 </div>
@@ -601,31 +615,20 @@ export default function BookingPage() {
                   {selectedServices.map((svc) => (
                     <div key={svc.id} className="flex items-center justify-between text-sm">
                       <div>
-                        <p className="font-medium">{svc.name}</p>
-                        <p className="text-xs text-muted-foreground">{svc.category}{!svc.is_product && ` • ${svc.duration} min`}</p>
+                        <p className="font-medium text-stone-800">{svc.name}</p>
+                        <p className="text-xs text-stone-400">{svc.category}{!svc.is_product && ` • ${svc.duration} min`}</p>
                       </div>
-                      <span className="font-semibold">{currency}{svc.price.toLocaleString()}</span>
+                      <span className="font-semibold text-stone-900">{currency}{svc.price.toLocaleString()}</span>
                     </div>
                   ))}
-
-                  <div className="border-t pt-3 space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground"><User className="w-4 h-4" />Stylist</span>
-                      <span className="font-medium">{selectedStaff?.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="w-4 h-4" />Date</span>
-                      <span className="font-medium">{selectedDate && format(selectedDate, "EEE, MMM d")}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" />Time</span>
-                      <span className="font-medium">{selectedTime}</span>
-                    </div>
+                  <div className="border-t border-stone-100 pt-3 space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-stone-500">Stylist</span><span className="font-medium text-stone-800">{selectedStaff?.name}</span></div>
+                    <div className="flex justify-between"><span className="text-stone-500">Date</span><span className="font-medium text-stone-800">{selectedDate && format(selectedDate, "EEE, MMM d")}</span></div>
+                    <div className="flex justify-between"><span className="text-stone-500">Time</span><span className="font-medium text-stone-800">{selectedTime}</span></div>
                   </div>
-
-                  <div className="border-t pt-3 flex items-center justify-between">
-                    <span className="font-bold text-base">Total</span>
-                    <span className="text-2xl font-bold text-primary">{currency}{cartTotal.toLocaleString()}</span>
+                  <div className="border-t border-stone-200 pt-3 flex items-center justify-between">
+                    <span className="font-bold text-stone-900">Total</span>
+                    <span className="text-2xl font-bold text-stone-900">{currency}{cartTotal.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -636,103 +639,66 @@ export default function BookingPage() {
 
       {/* ===== CONFIRMED ===== */}
       {step === "confirmed" && (
-        <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center animate-fade-in">
           <div className="relative inline-block mb-8">
-            <div className="w-28 h-28 rounded-3xl bg-emerald-500/15 flex items-center justify-center mx-auto">
+            <div className="w-28 h-28 rounded-full bg-emerald-50 flex items-center justify-center mx-auto">
               <Check className="w-14 h-14 text-emerald-500" />
             </div>
-            <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center animate-bounce">
-              <Sparkles className="w-5 h-5 text-primary" />
+            <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center animate-bounce">
+              <Sparkles className="w-5 h-5 text-amber-500" />
             </div>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3">You're all set!</h2>
-          <p className="text-muted-foreground text-lg mb-8">Your appointment has been confirmed.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-3">You're All Set!</h2>
+          <p className="text-stone-500 text-lg mb-8">Your appointment has been confirmed. We look forward to seeing you!</p>
 
-          <div className="bg-card rounded-2xl border overflow-hidden text-left mb-8">
-            <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-5 py-3 border-b">
-              <p className="text-xs font-bold uppercase tracking-wider text-primary">Appointment Details</p>
+          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden text-left mb-8 shadow-sm">
+            <div className="bg-stone-50 px-5 py-3 border-b border-stone-200">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-600">Appointment Details</p>
             </div>
             <div className="p-5 space-y-3 text-sm">
               {selectedServices.map((svc) => (
                 <div key={svc.id} className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{svc.name}</span>
-                  <span className="font-semibold">{currency}{svc.price.toLocaleString()}</span>
+                  <span className="text-stone-500">{svc.name}</span>
+                  <span className="font-semibold text-stone-900">{currency}{svc.price.toLocaleString()}</span>
                 </div>
               ))}
-              <div className="border-t pt-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Stylist</span>
-                  <span className="font-semibold">{selectedStaff?.name}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Date & Time</span>
-                  <span className="font-semibold">{selectedDate && format(selectedDate, "EEE, MMM d")} at {selectedTime}</span>
-                </div>
+              <div className="border-t border-stone-100 pt-3 space-y-2">
+                <div className="flex justify-between"><span className="text-stone-500">Stylist</span><span className="font-semibold text-stone-900">{selectedStaff?.name}</span></div>
+                <div className="flex justify-between"><span className="text-stone-500">Date & Time</span><span className="font-semibold text-stone-900">{selectedDate && format(selectedDate, "EEE, MMM d")} at {selectedTime}</span></div>
               </div>
-              <div className="border-t pt-3 flex items-center justify-between">
-                <span className="font-bold">Total</span>
-                <span className="text-xl font-bold text-primary">{currency}{cartTotal.toLocaleString()}</span>
+              <div className="border-t border-stone-200 pt-3 flex justify-between">
+                <span className="font-bold text-stone-900">Total</span>
+                <span className="text-xl font-bold text-stone-900">{currency}{cartTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" className="rounded-xl font-semibold shadow-md shadow-primary/20" onClick={resetBooking}>
-              <CalendarDays className="w-4 h-4 mr-2" />Book Another
-            </Button>
+            <button onClick={resetBooking} className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold hover:bg-stone-800 transition-colors shadow-md">
+              <CalendarDays className="w-4 h-4" />Book Another
+            </button>
             {salon?.phone && (
-              <Button variant="outline" size="lg" className="rounded-xl font-semibold" asChild>
-                <a href={`tel:${salon.phone}`}><Phone className="w-4 h-4 mr-2" />Call Salon</a>
-              </Button>
+              <a href={`tel:${salon.phone}`} className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-stone-200 text-stone-700 font-semibold hover:bg-stone-50 transition-colors">
+                <Phone className="w-4 h-4" />Call Salon
+              </a>
             )}
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <footer className="border-t mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+      <footer className="border-t border-stone-200 bg-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <span>© {new Date().getFullYear()} {salon?.name ?? "Salon"}. All rights reserved.</span>
-          <span className="flex items-center gap-1.5">Powered by <Scissors className="w-3.5 h-3.5" /> <span className="font-semibold text-foreground">SalonSync</span></span>
+          <span className="flex items-center gap-1.5">Powered by <Scissors className="w-3.5 h-3.5" /> <span className="font-semibold text-stone-600">SalonSync</span></span>
         </div>
       </footer>
-
-      {/* Mobile cart drawer */}
-      {cartOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setCartOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl border-t p-6 max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
-            <div className="w-10 h-1 rounded-full bg-muted mx-auto mb-4" />
-            <CartPanel
-              selectedServices={selectedServices}
-              currency={currency}
-              cartTotal={cartTotal}
-              hasServices={hasServices}
-              onRemove={(id) => setSelectedServices((prev) => prev.filter((s) => s.id !== id))}
-              onProceed={() => { setCartOpen(false); setStep("staff"); }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-/* ===== Sub-components ===== */
-
-function StepHeader({ title, subtitle, icon: Icon }: { title: string; subtitle: string; icon: typeof Scissors }) {
-  return (
-    <div>
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-        <Icon className="w-3.5 h-3.5 text-primary" />
-      </div>
-      <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">{title}</h2>
-      <p className="text-muted-foreground mt-2 text-lg">{subtitle}</p>
-    </div>
-  );
-}
-
+/* ===== CART PANEL ===== */
 function CartPanel({
   selectedServices, currency, cartTotal, hasServices, onRemove, onProceed,
 }: {
@@ -740,32 +706,35 @@ function CartPanel({
   onRemove: (id: string) => void; onProceed: () => void;
 }) {
   return (
-    <div className="bg-card rounded-2xl border overflow-hidden">
-      <div className="px-5 py-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
-        <p className="font-bold flex items-center gap-2 text-sm">
-          <ShoppingBag className="w-4 h-4 text-primary" />
-          Your Selection
-          <span className="ml-auto text-xs text-muted-foreground">{selectedServices.length} item{selectedServices.length !== 1 ? "s" : ""}</span>
+    <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
+      <div className="px-5 py-4 border-b border-stone-100 bg-stone-50">
+        <p className="font-bold text-stone-700 text-sm flex items-center gap-2">
+          <ShoppingBag className="w-4 h-4" />
+          Your Booking
+          <span className="ml-auto text-xs text-stone-400 font-normal">{selectedServices.length} item{selectedServices.length !== 1 ? "s" : ""}</span>
         </p>
       </div>
 
       {selectedServices.length === 0 ? (
         <div className="p-8 text-center">
-          <ShoppingBag className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-          <p className="text-sm text-muted-foreground">Your cart is empty</p>
-          <p className="text-xs text-muted-foreground mt-1">Browse services & products to add</p>
+          <ShoppingBag className="w-8 h-8 text-stone-200 mx-auto mb-3" />
+          <p className="text-sm text-stone-500">Your cart is empty</p>
+          <p className="text-xs text-stone-400 mt-1">Browse and add services</p>
         </div>
       ) : (
-        <div className="divide-y">
+        <div className="divide-y divide-stone-100">
           {selectedServices.map((svc) => (
-            <div key={svc.id} className="flex items-center gap-3 px-5 py-3">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{svc.name}</p>
-                <p className="text-xs text-muted-foreground">{svc.category}{!svc.is_product && ` • ${svc.duration} min`}</p>
+            <div key={svc.id} className="flex items-center gap-3 px-5 py-3 group">
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img src={CATEGORY_IMAGES[svc.category] ?? catHair} alt="" className="w-full h-full object-cover" />
               </div>
-              <span className="text-sm font-bold whitespace-nowrap">{currency}{svc.price.toLocaleString()}</span>
-              <button onClick={() => onRemove(svc.id)} className="w-7 h-7 rounded-full hover:bg-destructive/10 flex items-center justify-center transition-colors">
-                <X className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-stone-800 text-sm truncate">{svc.name}</p>
+                <p className="text-xs text-stone-400">{svc.category}</p>
+              </div>
+              <span className="text-sm font-bold text-stone-900 whitespace-nowrap">{currency}{svc.price.toLocaleString()}</span>
+              <button onClick={() => onRemove(svc.id)} className="w-6 h-6 rounded-full hover:bg-red-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                <X className="w-3.5 h-3.5 text-stone-400 hover:text-red-500" />
               </button>
             </div>
           ))}
@@ -773,24 +742,20 @@ function CartPanel({
       )}
 
       {selectedServices.length > 0 && (
-        <div className="p-5 border-t space-y-4">
+        <div className="p-5 border-t border-stone-200 space-y-4">
           <div className="flex items-center justify-between">
-            <span className="font-bold">Total</span>
-            <span className="text-xl font-bold text-primary">{currency}{cartTotal.toLocaleString()}</span>
+            <span className="font-bold text-stone-900">Total</span>
+            <span className="text-xl font-bold text-stone-900">{currency}{cartTotal.toLocaleString()}</span>
           </div>
-          <Button
-            className="w-full h-12 text-base font-bold rounded-xl shadow-md shadow-primary/20"
+          <button
+            className="w-full h-12 rounded-xl bg-stone-900 text-white text-base font-bold hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex items-center justify-center gap-1.5"
             disabled={!hasServices}
             onClick={onProceed}
           >
-            {hasServices ? (
-              <>Continue to Stylist <ChevronRight className="w-4 h-4 ml-1" /></>
-            ) : (
-              "Add a service to continue"
-            )}
-          </Button>
+            {hasServices ? <>Continue <ChevronRight className="w-4 h-4" /></> : "Add a service"}
+          </button>
           {!hasServices && (
-            <p className="text-xs text-center text-muted-foreground">You need at least one service (not just products) to book.</p>
+            <p className="text-xs text-center text-stone-400">Add at least one service (not just products) to book.</p>
           )}
         </div>
       )}
