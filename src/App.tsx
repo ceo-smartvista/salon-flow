@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { useSuperAdmin } from "@/hooks/useSuperAdmin";
 import AppLayout from "./components/AppLayout";
+import LicenseGate from "./components/LicenseGate";
 import Dashboard from "./pages/Dashboard";
 import CalendarPage from "./pages/CalendarPage";
 import ClientsPage from "./pages/ClientsPage";
@@ -21,6 +23,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import BookingPage from "./pages/BookingPage";
+import SuperAdminPage from "./pages/SuperAdminPage";
 
 const queryClient = new QueryClient();
 
@@ -54,21 +57,24 @@ const App = () => (
                 path="/*"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Routes>
-                        <Route path="/" element={<Dashboard />} />
-                        <Route path="/calendar" element={<CalendarPage />} />
-                        <Route path="/clients" element={<ClientsPage />} />
-                        <Route path="/pos" element={<POSPage />} />
-                        <Route path="/catalog" element={<CatalogPage />} />
-                        <Route path="/portfolio" element={<PortfolioPage />} />
-                        <Route path="/memberships" element={<MembershipsPage />} />
-                        <Route path="/offpeak" element={<OffPeakPage />} />
-                        <Route path="/whatsapp" element={<WhatsAppBotPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </AppLayout>
+                    <LicenseGate>
+                      <AppLayout>
+                        <Routes>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/calendar" element={<CalendarPage />} />
+                          <Route path="/clients" element={<ClientsPage />} />
+                          <Route path="/pos" element={<POSPage />} />
+                          <Route path="/catalog" element={<CatalogPage />} />
+                          <Route path="/portfolio" element={<PortfolioPage />} />
+                          <Route path="/memberships" element={<MembershipsPage />} />
+                          <Route path="/offpeak" element={<OffPeakPage />} />
+                          <Route path="/whatsapp" element={<WhatsAppBotPage />} />
+                          <Route path="/settings" element={<SettingsPage />} />
+                          <Route path="/super-admin" element={<SuperAdminPage />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </AppLayout>
+                    </LicenseGate>
                   </ProtectedRoute>
                 }
               />

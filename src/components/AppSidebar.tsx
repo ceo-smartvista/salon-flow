@@ -17,9 +17,11 @@ import {
   MessageCircle,
   Sun,
   Moon,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useSuperAdmin } from "@/hooks/useSuperAdmin";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -39,6 +41,11 @@ export default function AppSidebar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { isSuperAdmin } = useSuperAdmin();
+
+  const allNavItems = isSuperAdmin
+    ? [...navItems, { to: "/super-admin", icon: Shield, label: "Super Admin" }]
+    : navItems;
 
   return (
     <aside
@@ -58,7 +65,7 @@ export default function AppSidebar() {
       </div>
 
       <nav className="flex-1 flex flex-col gap-0.5 px-3 py-4 overflow-y-auto">
-        {navItems.map((item) => {
+        {allNavItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
             <NavLink
