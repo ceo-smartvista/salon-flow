@@ -10,6 +10,11 @@ import CalendarPage from "./pages/CalendarPage";
 import ClientsPage from "./pages/ClientsPage";
 import POSPage from "./pages/POSPage";
 import SettingsPage from "./pages/SettingsPage";
+import InventoryPage from "./pages/InventoryPage";
+import PortfolioPage from "./pages/PortfolioPage";
+import MembershipsPage from "./pages/MembershipsPage";
+import OffPeakPage from "./pages/OffPeakPage";
+import WhatsAppBotPage from "./pages/WhatsAppBotPage";
 import AuthPage from "./pages/AuthPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -51,6 +56,11 @@ const App = () => (
                       <Route path="/calendar" element={<CalendarPage />} />
                       <Route path="/clients" element={<ClientsPage />} />
                       <Route path="/pos" element={<POSPage />} />
+                      <Route path="/inventory" element={<InventoryPage />} />
+                      <Route path="/portfolio" element={<PortfolioPage />} />
+                      <Route path="/memberships" element={<MembershipsPage />} />
+                      <Route path="/offpeak" element={<OffPeakPage />} />
+                      <Route path="/whatsapp" element={<WhatsAppBotPage />} />
                       <Route path="/settings" element={<SettingsPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
