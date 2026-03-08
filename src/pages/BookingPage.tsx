@@ -385,7 +385,7 @@ export default function BookingPage() {
                   <CartPanel
                     selectedServices={selectedServices} currency={currency} cartTotal={cartTotal}
                     hasServices={hasServices} onRemove={(id) => setSelectedServices((prev) => prev.filter((s) => s.id !== id))}
-                    onProceed={() => setStep("staff")}
+                    onProceed={() => setStep(hasServices ? "staff" : "details")}
                   />
                 </div>
               </div>
@@ -400,11 +400,10 @@ export default function BookingPage() {
                   <p className="text-xs text-stone-500">{selectedServices.length} item{selectedServices.length > 1 ? "s" : ""}</p>
                   <p className="text-xl font-bold text-stone-900">{currency}{cartTotal.toLocaleString()}</p>
                 </div>
-                <Button
+                 <Button
                   size="lg"
                   className="rounded-full font-bold text-base px-8 bg-stone-900 text-white hover:bg-stone-800 shadow-lg"
-                  disabled={!hasServices}
-                  onClick={() => setStep("staff")}
+                  onClick={() => setStep(hasServices ? "staff" : "details")}
                 >
                   Continue <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -552,18 +551,18 @@ export default function BookingPage() {
       {/* ===== DETAILS STEP ===== */}
       {step === "details" && (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
-          <button onClick={() => setStep("datetime")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to schedule
+           <button onClick={() => setStep(hasServices ? "datetime" : "browse")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to {hasServices ? "schedule" : "services"}
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
               <div>
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
-                  Step 4 of 4
-                </span>
-                <h2 className="text-3xl font-bold text-stone-900 tracking-tight">Complete Your Booking</h2>
-                <p className="text-stone-500 mt-2">Enter your details to confirm the appointment.</p>
+                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-xs font-semibold text-stone-600 uppercase tracking-wider mb-4">
+                   Step {hasServices ? "4 of 4" : "2 of 2"}
+                 </span>
+                 <h2 className="text-3xl font-bold text-stone-900 tracking-tight">{hasServices ? "Complete Your Booking" : "Complete Your Order"}</h2>
+                 <p className="text-stone-500 mt-2">{hasServices ? "Enter your details to confirm the appointment." : "Enter your details to place your order."}</p>
               </div>
 
               <div className="space-y-3">
@@ -749,7 +748,7 @@ function CartPanel({
           </div>
           <button
             className="w-full h-12 rounded-xl bg-stone-900 text-white text-base font-bold hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex items-center justify-center gap-1.5"
-            disabled={!hasServices}
+            disabled={selectedServices.length === 0}
             onClick={onProceed}
           >
             {hasServices ? <>Continue <ChevronRight className="w-4 h-4" /></> : "Add a service"}
