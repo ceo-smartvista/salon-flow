@@ -46,28 +46,66 @@ export default function SettingsPage() {
 }
 
 function SalonTab() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  const { data: settings } = useQuery({
+    queryKey: ["salon-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("salon_settings").select("*").limit(1).single();
+      return data;
+    },
+  });
+
+  const [form, setForm] = useState<any>(null);
+
+  // Sync form with fetched data
+  const s = form ?? settings;
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!settings?.id || !s) return;
+      const { error } = await supabase.from("salon_settings").update({
+        name: s.name, phone: s.phone, email: s.email,
+        currency: s.currency, address: s.address,
+        online_booking: s.online_booking, whatsapp_reminders: s.whatsapp_reminders,
+      }).eq("id", settings.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["salon-settings"] }); toast({ title: "Settings saved!" }); },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const update = (field: string, value: any) => {
+    setForm((prev: any) => ({ ...(prev ?? settings), [field]: value }));
+  };
+
+  if (!s) return <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>;
+
   return (
     <div className="bg-card rounded-xl border p-6 space-y-5 animate-fade-in">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label className="text-sm font-medium mb-1.5 block">Salon Name</label><Input defaultValue="Luxe Studio Salon" /></div>
-        <div><label className="text-sm font-medium mb-1.5 block">Phone</label><Input defaultValue="+91 98765 43210" /></div>
-        <div><label className="text-sm font-medium mb-1.5 block">Email</label><Input defaultValue="hello@luxestudio.com" /></div>
+        <div><label className="text-sm font-medium mb-1.5 block">Salon Name</label><Input value={s.name ?? ""} onChange={(e) => update("name", e.target.value)} /></div>
+        <div><label className="text-sm font-medium mb-1.5 block">Phone</label><Input value={s.phone ?? ""} onChange={(e) => update("phone", e.target.value)} /></div>
+        <div><label className="text-sm font-medium mb-1.5 block">Email</label><Input value={s.email ?? ""} onChange={(e) => update("email", e.target.value)} /></div>
         <div><label className="text-sm font-medium mb-1.5 block">Currency</label>
-          <select className="w-full h-9 px-3 rounded-lg border bg-background text-sm">
-            <option>INR (₹)</option><option>USD ($)</option><option>GBP (£)</option>
+          <select value={s.currency ?? "INR"} onChange={(e) => update("currency", e.target.value)} className="w-full h-9 px-3 rounded-lg border bg-background text-sm">
+            <option value="INR">INR (₹)</option><option value="USD">USD ($)</option><option value="GBP">GBP (£)</option>
           </select>
         </div>
-        <div className="sm:col-span-2"><label className="text-sm font-medium mb-1.5 block">Address</label><Input defaultValue="42 MG Road, Bengaluru, Karnataka 560001" /></div>
+        <div className="sm:col-span-2"><label className="text-sm font-medium mb-1.5 block">Address</label><Input value={s.address ?? ""} onChange={(e) => update("address", e.target.value)} /></div>
       </div>
       <div className="flex items-center justify-between pt-2 border-t">
         <div><p className="text-sm font-medium">Online Booking</p><p className="text-xs text-muted-foreground">Allow clients to book via your public page</p></div>
-        <Switch defaultChecked />
+        <Switch checked={s.online_booking} onCheckedChange={(v) => update("online_booking", v)} />
       </div>
       <div className="flex items-center justify-between">
         <div><p className="text-sm font-medium">WhatsApp Reminders</p><p className="text-xs text-muted-foreground">Send automated booking confirmations</p></div>
-        <Switch defaultChecked />
+        <Switch checked={s.whatsapp_reminders} onCheckedChange={(v) => update("whatsapp_reminders", v)} />
       </div>
-      <Button size="sm" className="gap-1.5"><Save className="w-4 h-4" />Save Changes</Button>
+      <Button size="sm" className="gap-1.5" onClick={() => save.mutate()} disabled={save.isPending}>
+        <Save className="w-4 h-4" />{save.isPending ? "Saving..." : "Save Changes"}
+      </Button>
     </div>
   );
 }
