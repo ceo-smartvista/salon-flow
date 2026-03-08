@@ -9,7 +9,9 @@ import {
   Scissors,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -22,6 +24,7 @@ const navItems = [
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <aside
@@ -61,6 +64,22 @@ export default function AppSidebar() {
           );
         })}
       </nav>
+
+      {/* User & Logout */}
+      <div className="px-3 pb-2">
+        {user && !collapsed && (
+          <div className="px-3 py-2 mb-1">
+            <p className="text-xs text-sidebar-muted truncate">{user.email}</p>
+          </div>
+        )}
+        <button
+          onClick={signOut}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors w-full"
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+      </div>
 
       {/* Collapse toggle */}
       <button
