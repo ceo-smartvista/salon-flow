@@ -159,7 +159,7 @@ export default function POSPage() {
         <div className="lg:col-span-2">
           <div className="bg-card rounded-xl border sticky top-6">
             <div className="p-4 border-b">
-              <h2 className="font-serif font-semibold text-lg">Current Bill</h2>
+              <h2 className="font-display font-bold text-lg">Current Bill</h2>
               <p className="text-xs text-muted-foreground">{selectedClient} · {selectedStylist}</p>
             </div>
 

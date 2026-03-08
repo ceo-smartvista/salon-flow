@@ -179,7 +179,7 @@ export default function SettingsPage() {
       {activeTab === "commissions" && (
         <div className="bg-card rounded-xl border p-6 space-y-5 animate-fade-in">
           <div>
-            <h3 className="font-serif font-semibold text-lg">Commission Rules</h3>
+            <h3 className="font-display font-bold text-lg">Commission Rules</h3>
             <p className="text-sm text-muted-foreground mt-1">
               Define how staff commissions are calculated per service category.
             </p>

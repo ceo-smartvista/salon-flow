@@ -49,7 +49,7 @@ export default function Dashboard() {
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-2xl font-serif font-semibold">{stat.value}</span>
+              <span className="text-2xl font-display font-bold">{stat.value}</span>
               <span className="text-xs text-success font-medium flex items-center gap-0.5 mb-1">
                 <ArrowUpRight className="w-3 h-3" />
                 {stat.change}
@@ -63,7 +63,7 @@ export default function Dashboard() {
         {/* Today's appointments */}
         <div className="lg:col-span-2 bg-card rounded-xl border">
           <div className="flex items-center justify-between p-5 border-b">
-            <h2 className="text-lg font-serif font-semibold">Today's Schedule</h2>
+            <h2 className="text-lg font-display font-bold">Today's Schedule</h2>
             <span className="text-sm text-muted-foreground flex items-center gap-1">
               <Clock className="w-4 h-4" />
               {todayAppointments.length} appointments
@@ -100,7 +100,7 @@ export default function Dashboard() {
         {/* Top stylists */}
         <div className="bg-card rounded-xl border">
           <div className="p-5 border-b">
-            <h2 className="text-lg font-serif font-semibold">Top Stylists</h2>
+            <h2 className="text-lg font-display font-bold">Top Stylists</h2>
           </div>
           <div className="p-5 space-y-4">
             {topStylists.map((stylist, i) => (

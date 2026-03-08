@@ -35,7 +35,7 @@ export default function AppSidebar() {
           <Scissors className="w-5 h-5 text-sidebar-primary-foreground" />
         </div>
         {!collapsed && (
-          <span className="font-serif text-lg font-semibold tracking-tight text-sidebar-foreground">
+          <span className="font-display text-lg font-bold tracking-tight text-sidebar-foreground">
             SalonSync
           </span>
         )}
