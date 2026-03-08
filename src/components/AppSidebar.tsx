@@ -41,6 +41,13 @@ const superAdminNavItems = [
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
+export default function AppSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { isSuperAdmin } = useSuperAdmin();
+
   return (
     <aside
       className={`flex flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 ${
