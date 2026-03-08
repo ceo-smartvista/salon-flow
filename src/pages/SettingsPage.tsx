@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Plus, Trash2 } from "lucide-react";
+import { Save, Plus, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
-type Tab = "salon" | "services" | "staff" | "commissions";
+type Tab = "salon" | "services" | "staff" | "commissions" | "danger";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("salon");
@@ -20,6 +21,7 @@ export default function SettingsPage() {
     { id: "services", label: "Services" },
     { id: "staff", label: "Staff" },
     { id: "commissions", label: "Commissions" },
+    { id: "danger", label: "Danger Zone" },
   ];
 
   return (
@@ -41,6 +43,7 @@ export default function SettingsPage() {
       {activeTab === "services" && <ServicesTab />}
       {activeTab === "staff" && <StaffTab />}
       {activeTab === "commissions" && <CommissionsTab />}
+      {activeTab === "danger" && <DangerZoneTab />}
     </div>
   );
 }
