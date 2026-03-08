@@ -676,6 +676,89 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          payment_date: string
+          period_end: string
+          period_start: string
+          tenant_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          period_end: string
+          period_start: string
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          period_end?: string
+          period_start?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          created_at: string
+          grace_days: number
+          id: string
+          license_end: string
+          license_start: string
+          name: string
+          notes: string | null
+          owner_email: string
+          owner_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          grace_days?: number
+          id?: string
+          license_end?: string
+          license_start?: string
+          name: string
+          notes?: string | null
+          owner_email: string
+          owner_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          grace_days?: number
+          id?: string
+          license_end?: string
+          license_start?: string
+          name?: string
+          notes?: string | null
+          owner_email?: string
+          owner_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
