@@ -61,6 +61,24 @@ export default function UsersTab() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sa-all-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["sa-all-roles"] });
+      setDeleteTarget(null);
+      setConfirmText("");
+      toast({ title: "User deleted successfully" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const getUserRoles = (userId: string) => roles.filter(r => r.user_id === userId);
 
   const filteredProfiles = profiles.filter(p =>
