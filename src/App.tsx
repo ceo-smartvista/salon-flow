@@ -57,21 +57,24 @@ const App = () => (
                 path="/*"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Routes>
-                        <Route path="/" element={<Dashboard />} />
-                        <Route path="/calendar" element={<CalendarPage />} />
-                        <Route path="/clients" element={<ClientsPage />} />
-                        <Route path="/pos" element={<POSPage />} />
-                        <Route path="/catalog" element={<CatalogPage />} />
-                        <Route path="/portfolio" element={<PortfolioPage />} />
-                        <Route path="/memberships" element={<MembershipsPage />} />
-                        <Route path="/offpeak" element={<OffPeakPage />} />
-                        <Route path="/whatsapp" element={<WhatsAppBotPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </AppLayout>
+                    <LicenseGate>
+                      <AppLayout>
+                        <Routes>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/calendar" element={<CalendarPage />} />
+                          <Route path="/clients" element={<ClientsPage />} />
+                          <Route path="/pos" element={<POSPage />} />
+                          <Route path="/catalog" element={<CatalogPage />} />
+                          <Route path="/portfolio" element={<PortfolioPage />} />
+                          <Route path="/memberships" element={<MembershipsPage />} />
+                          <Route path="/offpeak" element={<OffPeakPage />} />
+                          <Route path="/whatsapp" element={<WhatsAppBotPage />} />
+                          <Route path="/settings" element={<SettingsPage />} />
+                          <Route path="/super-admin" element={<SuperAdminPage />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </AppLayout>
+                    </LicenseGate>
                   </ProtectedRoute>
                 }
               />
