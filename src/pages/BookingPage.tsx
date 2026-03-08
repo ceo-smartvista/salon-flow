@@ -551,8 +551,8 @@ export default function BookingPage() {
       {/* ===== DETAILS STEP ===== */}
       {step === "details" && (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
-          <button onClick={() => setStep("datetime")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to schedule
+           <button onClick={() => setStep(hasServices ? "datetime" : "browse")} className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors group mb-8">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Back to {hasServices ? "schedule" : "services"}
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
