@@ -748,7 +748,7 @@ function CartPanel({
           </div>
           <button
             className="w-full h-12 rounded-xl bg-stone-900 text-white text-base font-bold hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex items-center justify-center gap-1.5"
-            disabled={!hasServices}
+            disabled={selectedServices.length === 0}
             onClick={onProceed}
           >
             {hasServices ? <>Continue <ChevronRight className="w-4 h-4" /></> : "Add a service"}
