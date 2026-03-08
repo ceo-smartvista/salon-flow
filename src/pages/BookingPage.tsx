@@ -166,22 +166,29 @@ export default function BookingPage() {
     <div className="min-h-screen bg-background">
       {/* Hero Header */}
       <header className="relative overflow-hidden border-b bg-card">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/10" />
-        <div className="relative max-w-4xl mx-auto px-6 py-8 sm:py-10">
+        {(salon as any)?.hero_image ? (
+          <>
+            <img src={(salon as any).hero_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/10" />
+        )}
+        <div className={cn("relative max-w-4xl mx-auto px-6", (salon as any)?.hero_image ? "py-12 sm:py-16" : "py-8 sm:py-10")}>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-primary shadow-lg shadow-primary/25 flex items-center justify-center">
               <Scissors className="w-7 h-7 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{salon?.name ?? "Book Your Appointment"}</h1>
+              <h1 className={cn("font-display text-2xl sm:text-3xl font-bold tracking-tight", (salon as any)?.hero_image && "text-white")}>{salon?.name ?? "Book Your Appointment"}</h1>
               <div className="flex items-center gap-4 mt-1.5">
                 {salon?.address && (
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span className={cn("flex items-center gap-1 text-sm", (salon as any)?.hero_image ? "text-white/80" : "text-muted-foreground")}>
                     <MapPin className="w-3.5 h-3.5" />{salon.address}
                   </span>
                 )}
                 {salon?.phone && (
-                  <a href={`tel:${salon.phone}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <a href={`tel:${salon.phone}`} className={cn("flex items-center gap-1 text-sm transition-colors", (salon as any)?.hero_image ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-primary")}>
                     <Phone className="w-3.5 h-3.5" />{salon.phone}
                   </a>
                 )}
