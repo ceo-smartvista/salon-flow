@@ -14,6 +14,402 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          end_time: string
+          id: string
+          notes: string | null
+          service_id: string | null
+          staff_id: string | null
+          start_time: string
+          status: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          service_id?: string | null
+          staff_id?: string | null
+          start_time: string
+          status?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          service_id?: string | null
+          staff_id?: string | null
+          start_time?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_memberships: {
+        Row: {
+          client_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          membership_id: string
+          started_at: string
+          status: string
+          usage_count: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          membership_id: string
+          started_at?: string
+          status?: string
+          usage_count?: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          membership_id?: string
+          started_at?: string
+          status?: string
+          usage_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_memberships_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_memberships_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      commission_rules: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          material_deduction: number
+          rate_pct: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          material_deduction?: number
+          rate_pct?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          material_deduction?: number
+          rate_pct?: number
+        }
+        Relationships: []
+      }
+      consent_forms: {
+        Row: {
+          client_id: string
+          created_at: string
+          form_data: Json
+          id: string
+          service_name: string
+          signature_data: string | null
+          signed_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          form_data?: Json
+          id?: string
+          service_name: string
+          signature_data?: string | null
+          signed_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          form_data?: Json
+          id?: string
+          service_name?: string
+          signature_data?: string | null
+          signed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_forms_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory: {
+        Row: {
+          auto_reorder: boolean
+          category: string
+          cost_per_unit: number
+          current_stock: number
+          id: string
+          min_stock: number
+          name: string
+          supplier: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          auto_reorder?: boolean
+          category?: string
+          cost_per_unit?: number
+          current_stock?: number
+          id?: string
+          min_stock?: number
+          name: string
+          supplier?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_reorder?: boolean
+          category?: string
+          cost_per_unit?: number
+          current_stock?: number
+          id?: string
+          min_stock?: number
+          name?: string
+          supplier?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory_usage: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_id: string
+          notes: string | null
+          qty_used: number
+          staff_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_id: string
+          notes?: string | null
+          qty_used: number
+          staff_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_id?: string
+          notes?: string | null
+          qty_used?: number
+          staff_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_usage_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_usage_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          active: boolean
+          billing_cycle: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+          usage_limit: number | null
+        }
+        Insert: {
+          active?: boolean
+          billing_cycle?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price?: number
+          usage_limit?: number | null
+        }
+        Update: {
+          active?: boolean
+          billing_cycle?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+          usage_limit?: number | null
+        }
+        Relationships: []
+      }
+      offpeak_offers: {
+        Row: {
+          active: boolean
+          auto_notify: boolean
+          created_at: string
+          day_of_week: number
+          discount_pct: number
+          end_hour: number
+          id: string
+          name: string
+          start_hour: number
+        }
+        Insert: {
+          active?: boolean
+          auto_notify?: boolean
+          created_at?: string
+          day_of_week: number
+          discount_pct?: number
+          end_hour?: number
+          id?: string
+          name: string
+          start_hour?: number
+        }
+        Update: {
+          active?: boolean
+          auto_notify?: boolean
+          created_at?: string
+          day_of_week?: number
+          discount_pct?: number
+          end_hour?: number
+          id?: string
+          name?: string
+          start_hour?: number
+        }
+        Relationships: []
+      }
+      portfolio: {
+        Row: {
+          after_photo: string | null
+          before_photo: string | null
+          client_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          service_name: string
+          staff_id: string | null
+        }
+        Insert: {
+          after_photo?: string | null
+          before_photo?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          service_name: string
+          staff_id?: string | null
+        }
+        Update: {
+          after_photo?: string | null
+          before_photo?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          service_name?: string
+          staff_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,6 +434,206 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      purchase_orders: {
+        Row: {
+          created_at: string
+          estimated_cost: number
+          id: string
+          inventory_id: string
+          qty_ordered: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          inventory_id: string
+          qty_ordered: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          inventory_id?: string
+          qty_ordered?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_items: {
+        Row: {
+          commission_pct: number
+          id: string
+          name: string
+          price: number
+          qty: number
+          sale_id: string
+          service_id: string | null
+        }
+        Insert: {
+          commission_pct?: number
+          id?: string
+          name: string
+          price: number
+          qty?: number
+          sale_id: string
+          service_id?: string | null
+        }
+        Update: {
+          commission_pct?: number
+          id?: string
+          name?: string
+          price?: number
+          qty?: number
+          sale_id?: string
+          service_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          payment_method: string
+          staff_id: string | null
+          status: string
+          subtotal: number
+          tax: number
+          tip: number
+          total: number
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          payment_method?: string
+          staff_id?: string | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          tip?: number
+          total?: number
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          payment_method?: string
+          staff_id?: string | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          tip?: number
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          active: boolean
+          category: string
+          commission_pct: number
+          created_at: string
+          duration: number
+          id: string
+          is_product: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          commission_pct?: number
+          created_at?: string
+          duration?: number
+          id?: string
+          is_product?: boolean
+          name: string
+          price?: number
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          commission_pct?: number
+          created_at?: string
+          duration?: number
+          id?: string
+          is_product?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      staff: {
+        Row: {
+          active: boolean
+          base_commission_pct: number
+          created_at: string
+          id: string
+          name: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          base_commission_pct?: number
+          created_at?: string
+          id?: string
+          name: string
+          role?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          base_commission_pct?: number
+          created_at?: string
+          id?: string
+          name?: string
+          role?: string
+          user_id?: string | null
         }
         Relationships: []
       }
