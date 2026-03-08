@@ -17,9 +17,11 @@ import {
   MessageCircle,
   Sun,
   Moon,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useSuperAdmin } from "@/hooks/useSuperAdmin";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
