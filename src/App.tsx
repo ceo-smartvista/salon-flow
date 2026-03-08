@@ -60,7 +60,7 @@ const App = () => (
                     <LicenseGate>
                       <AppLayout>
                         <Routes>
-                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/" element={<DashboardRouter />} />
                           <Route path="/calendar" element={<CalendarPage />} />
                           <Route path="/clients" element={<ClientsPage />} />
                           <Route path="/pos" element={<POSPage />} />
