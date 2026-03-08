@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useSuperAdmin } from "@/hooks/useSuperAdmin";
 
-const navItems = [
+const salonNavItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/calendar", icon: Calendar, label: "Calendar" },
   { to: "/clients", icon: Users, label: "Clients" },
@@ -36,16 +36,17 @@ const navItems = [
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
+const superAdminNavItems = [
+  { to: "/super-admin", icon: Shield, label: "Super Admin" },
+  { to: "/settings", icon: Settings, label: "Settings" },
+];
+
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { isSuperAdmin } = useSuperAdmin();
-
-  const allNavItems = isSuperAdmin
-    ? [...navItems, { to: "/super-admin", icon: Shield, label: "Super Admin" }]
-    : navItems;
 
   return (
     <aside
@@ -65,7 +66,7 @@ export default function AppSidebar() {
       </div>
 
       <nav className="flex-1 flex flex-col gap-0.5 px-3 py-4 overflow-y-auto">
-        {allNavItems.map((item) => {
+        {(isSuperAdmin ? superAdminNavItems : salonNavItems).map((item) => {
           const isActive = location.pathname === item.to;
           return (
             <NavLink
