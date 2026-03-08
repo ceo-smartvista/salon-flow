@@ -362,6 +362,51 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_offers: {
+        Row: {
+          active: boolean
+          code: string | null
+          created_at: string
+          current_uses: number
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          max_uses: number | null
+          name: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          max_uses?: number | null
+          name: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          max_uses?: number | null
+          name?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       portfolio: {
         Row: {
           after_photo: string | null
