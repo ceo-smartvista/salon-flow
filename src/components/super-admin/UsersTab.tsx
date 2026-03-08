@@ -16,7 +16,8 @@ export default function UsersTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; userId: string; name: string } | null>(null);
+  const [confirmText, setConfirmText] = useState("");
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["sa-all-profiles"],
     queryFn: async () => {
