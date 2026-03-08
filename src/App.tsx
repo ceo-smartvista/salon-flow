@@ -11,7 +11,7 @@ import CalendarPage from "./pages/CalendarPage";
 import ClientsPage from "./pages/ClientsPage";
 import POSPage from "./pages/POSPage";
 import SettingsPage from "./pages/SettingsPage";
-import InventoryPage from "./pages/InventoryPage";
+import CatalogPage from "./pages/CatalogPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import MembershipsPage from "./pages/MembershipsPage";
 import OffPeakPage from "./pages/OffPeakPage";
@@ -60,7 +60,7 @@ const App = () => (
                         <Route path="/calendar" element={<CalendarPage />} />
                         <Route path="/clients" element={<ClientsPage />} />
                         <Route path="/pos" element={<POSPage />} />
-                        <Route path="/inventory" element={<InventoryPage />} />
+                        <Route path="/catalog" element={<CatalogPage />} />
                         <Route path="/portfolio" element={<PortfolioPage />} />
                         <Route path="/memberships" element={<MembershipsPage />} />
                         <Route path="/offpeak" element={<OffPeakPage />} />
