@@ -7,15 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Shield, UserPlus } from "lucide-react";
+import { Search, Shield, UserPlus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 export default function UsersTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; userId: string; name: string } | null>(null);
+  const [confirmText, setConfirmText] = useState("");
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["sa-all-profiles"],
     queryFn: async () => {
@@ -59,6 +61,24 @@ export default function UsersTab() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sa-all-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["sa-all-roles"] });
+      setDeleteTarget(null);
+      setConfirmText("");
+      toast({ title: "User deleted successfully" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const getUserRoles = (userId: string) => roles.filter(r => r.user_id === userId);
 
   const filteredProfiles = profiles.filter(p =>
@@ -98,16 +118,18 @@ export default function UsersTab() {
               <TableHead>Roles</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead className="text-right">Assign Role</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
             ) : filteredProfiles.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No users found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No users found</TableCell></TableRow>
             ) : (
               filteredProfiles.map(profile => {
                 const userRoles = getUserRoles(profile.user_id);
+                const isSA = userRoles.some(r => r.role === "super_admin");
                 return (
                   <TableRow key={profile.id}>
                     <TableCell>
@@ -160,6 +182,18 @@ export default function UsersTab() {
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        disabled={isSA}
+                        title={isSA ? "Cannot delete super admins" : "Delete user"}
+                        onClick={() => setDeleteTarget({ id: profile.id, userId: profile.user_id, name: profile.display_name || "Unnamed" })}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })
@@ -167,6 +201,31 @@ export default function UsersTab() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) { setDeleteTarget(null); setConfirmText(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete user "{deleteTarget?.name}"?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete the user's account, profile, and all assigned roles. This action cannot be undone. Type <span className="font-mono font-bold text-destructive">DELETE</span> to confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            placeholder='Type "DELETE" to confirm'
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+          />
+          <Button
+            variant="destructive"
+            className="w-full"
+            disabled={confirmText !== "DELETE" || deleteUser.isPending}
+            onClick={() => deleteTarget && deleteUser.mutate(deleteTarget.userId)}
+          >
+            {deleteUser.isPending ? "Deleting..." : "Permanently Delete User"}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
