@@ -571,6 +571,42 @@ export type Database = {
           },
         ]
       }
+      salon_settings: {
+        Row: {
+          address: string | null
+          currency: string
+          email: string | null
+          id: string
+          name: string
+          online_booking: boolean
+          phone: string | null
+          updated_at: string
+          whatsapp_reminders: boolean
+        }
+        Insert: {
+          address?: string | null
+          currency?: string
+          email?: string | null
+          id?: string
+          name?: string
+          online_booking?: boolean
+          phone?: string | null
+          updated_at?: string
+          whatsapp_reminders?: boolean
+        }
+        Update: {
+          address?: string | null
+          currency?: string
+          email?: string | null
+          id?: string
+          name?: string
+          online_booking?: boolean
+          phone?: string | null
+          updated_at?: string
+          whatsapp_reminders?: boolean
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           active: boolean
