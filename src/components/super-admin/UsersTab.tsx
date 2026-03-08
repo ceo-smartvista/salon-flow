@@ -66,7 +66,23 @@ export default function UsersTab() {
       const { data, error } = await supabase.functions.invoke("delete-user", {
         body: { user_id: userId },
       });
-      if (error) throw error;
+
+      if (error) {
+        let message = error.message;
+        const context = (error as any).context;
+
+        if (context instanceof Response) {
+          try {
+            const parsed = await context.json();
+            if (parsed?.error) message = parsed.error;
+          } catch {
+            // keep generic error message
+          }
+        }
+
+        throw new Error(message);
+      }
+
       if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
