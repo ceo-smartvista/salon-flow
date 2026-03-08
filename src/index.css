@@ -98,3 +98,7 @@
     @apply font-bold tracking-tight;
   }
 }
+
+#lovable-badge {
+  display: none !important;
+}
