@@ -385,7 +385,7 @@ export default function BookingPage() {
                   <CartPanel
                     selectedServices={selectedServices} currency={currency} cartTotal={cartTotal}
                     hasServices={hasServices} onRemove={(id) => setSelectedServices((prev) => prev.filter((s) => s.id !== id))}
-                    onProceed={() => setStep("staff")}
+                    onProceed={() => setStep(hasServices ? "staff" : "details")}
                   />
                 </div>
               </div>
