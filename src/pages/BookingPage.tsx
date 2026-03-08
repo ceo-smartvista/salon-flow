@@ -400,11 +400,10 @@ export default function BookingPage() {
                   <p className="text-xs text-stone-500">{selectedServices.length} item{selectedServices.length > 1 ? "s" : ""}</p>
                   <p className="text-xl font-bold text-stone-900">{currency}{cartTotal.toLocaleString()}</p>
                 </div>
-                <Button
+                 <Button
                   size="lg"
                   className="rounded-full font-bold text-base px-8 bg-stone-900 text-white hover:bg-stone-800 shadow-lg"
-                  disabled={!hasServices}
-                  onClick={() => setStep("staff")}
+                  onClick={() => setStep(hasServices ? "staff" : "details")}
                 >
                   Continue <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
