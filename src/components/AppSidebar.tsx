@@ -41,6 +41,11 @@ export default function AppSidebar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { isSuperAdmin } = useSuperAdmin();
+
+  const allNavItems = isSuperAdmin
+    ? [...navItems, { to: "/super-admin", icon: Shield, label: "Super Admin" }]
+    : navItems;
 
   return (
     <aside
