@@ -576,6 +576,7 @@ export type Database = {
           address: string | null
           currency: string
           email: string | null
+          hero_image: string | null
           id: string
           name: string
           online_booking: boolean
@@ -587,6 +588,7 @@ export type Database = {
           address?: string | null
           currency?: string
           email?: string | null
+          hero_image?: string | null
           id?: string
           name?: string
           online_booking?: boolean
@@ -598,6 +600,7 @@ export type Database = {
           address?: string | null
           currency?: string
           email?: string | null
+          hero_image?: string | null
           id?: string
           name?: string
           online_booking?: boolean
