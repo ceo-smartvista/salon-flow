@@ -55,8 +55,12 @@ function SalonTab() {
   const { data: settings } = useQuery({
     queryKey: ["salon-settings"],
     queryFn: async () => {
-      const { data } = await supabase.from("salon_settings").select("*").limit(1).single();
-      return data;
+      const { data } = await supabase.from("salon_settings").select("*").limit(1).maybeSingle();
+      if (data) return data;
+      // Auto-create default settings row
+      const { data: created, error } = await supabase.from("salon_settings").insert({ name: "My Salon" }).select().single();
+      if (error) throw error;
+      return created;
     },
   });
 
