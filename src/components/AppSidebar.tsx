@@ -55,9 +55,15 @@ export default function AppSidebar() {
   const { theme, toggleTheme } = useTheme();
   const { isSuperAdmin } = useSuperAdmin();
 
+  const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+
   return (
     <aside
       className={`flex flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 ${
+        collapsed ? "w-[72px]" : "w-[240px]"
+      } min-h-screen`}
+    >
         collapsed ? "w-[72px]" : "w-[240px]"
       } min-h-screen`}
     >
@@ -73,23 +79,51 @@ export default function AppSidebar() {
       </div>
 
       <nav className="flex-1 flex flex-col gap-0.5 px-3 py-4 overflow-y-auto">
-        {(isSuperAdmin ? superAdminNavItems : salonNavItems).map((item) => {
-          const isActive = location.pathname === item.to;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-primary"
-                  : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent"
-              }`}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </NavLink>
-          );
-        })}
+        {isSuperAdmin
+          ? superAdminNavItems.map((item) => {
+              const isActive = item.tab
+                ? location.pathname === item.to && activeTab === item.tab
+                : location.pathname === item.to;
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    if (item.tab) {
+                      setActiveTab(item.tab);
+                      navigate(item.to);
+                      window.dispatchEvent(new CustomEvent("super-admin-tab", { detail: item.tab }));
+                    } else {
+                      navigate(item.to);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left ${
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary"
+                      : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  }`}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                </button>
+              );
+            })
+          : salonNavItems.map((item) => {
+              const isActive = location.pathname === item.to;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary"
+                      : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  }`}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                </NavLink>
+              );
+            })}
       </nav>
 
       <div className="px-3 pb-2">
