@@ -1,0 +1,1 @@
+ALTER TABLE public.salon_settings ADD COLUMN hero_image text;
