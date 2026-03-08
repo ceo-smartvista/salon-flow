@@ -26,6 +26,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import BookingPage from "./pages/BookingPage";
 import SuperAdminPage from "./pages/SuperAdminPage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
+  // Force password change for temp-password users
+  if (user.user_metadata?.must_change_password) {
+    return <Navigate to="/change-password" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -80,6 +85,7 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/book" element={<BookingPage />} />
+              <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route
                 path="/*"
                 element={

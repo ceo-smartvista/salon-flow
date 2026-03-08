@@ -22,7 +22,7 @@ export default function TenantsTab() {
   const [addPaymentOpen, setAddPaymentOpen] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [tenantForm, setTenantForm] = useState({
-    name: "", owner_email: "", license_days: 30, grace_days: 7, notes: "",
+    name: "", owner_email: "", full_name: "", temp_password: "", license_days: 30, grace_days: 7, notes: "",
   });
   const [paymentForm, setPaymentForm] = useState({ amount: 0, months: 1, notes: "" });
 
@@ -36,22 +36,25 @@ export default function TenantsTab() {
 
   const createTenant = useMutation({
     mutationFn: async () => {
-      const { data: profile } = await supabase.from("profiles").select("user_id").eq("display_name", tenantForm.owner_email).maybeSingle();
-      const { error } = await supabase.from("tenants").insert({
-        name: tenantForm.name,
-        owner_email: tenantForm.owner_email,
-        owner_user_id: profile?.user_id ?? "00000000-0000-0000-0000-000000000000",
-        license_end: addDays(new Date(), tenantForm.license_days).toISOString(),
-        grace_days: tenantForm.grace_days,
-        notes: tenantForm.notes || null,
+      const { data, error } = await supabase.functions.invoke("create-salon-admin", {
+        body: {
+          salon_name: tenantForm.name,
+          owner_email: tenantForm.owner_email,
+          temp_password: tenantForm.temp_password,
+          full_name: tenantForm.full_name || tenantForm.name,
+          license_days: tenantForm.license_days,
+          grace_days: tenantForm.grace_days,
+          notes: tenantForm.notes || null,
+        },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sa-tenants"] });
       setAddTenantOpen(false);
-      setTenantForm({ name: "", owner_email: "", license_days: 30, grace_days: 7, notes: "" });
-      toast({ title: "Tenant created successfully" });
+      setTenantForm({ name: "", owner_email: "", full_name: "", temp_password: "", license_days: 30, grace_days: 7, notes: "" });
+      toast({ title: "Salon admin account created!", description: "The salon owner can now log in with the temporary password." });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
@@ -130,13 +133,17 @@ export default function TenantsTab() {
             <DialogHeader><DialogTitle>Add New Tenant</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Salon Name</Label><Input value={tenantForm.name} onChange={e => setTenantForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Glamour Studio" /></div>
+              <div><Label>Owner Full Name</Label><Input value={tenantForm.full_name} onChange={e => setTenantForm(f => ({ ...f, full_name: e.target.value }))} placeholder="e.g. John Doe" /></div>
               <div><Label>Owner Email</Label><Input value={tenantForm.owner_email} onChange={e => setTenantForm(f => ({ ...f, owner_email: e.target.value }))} placeholder="owner@example.com" /></div>
+              <div><Label>Temporary Password</Label><Input type="text" value={tenantForm.temp_password} onChange={e => setTenantForm(f => ({ ...f, temp_password: e.target.value }))} placeholder="One-time temp password" /><p className="text-xs text-muted-foreground mt-1">The salon owner will be required to change this on first login.</p></div>
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>License (days)</Label><Input type="number" value={tenantForm.license_days} onChange={e => setTenantForm(f => ({ ...f, license_days: parseInt(e.target.value) || 30 }))} /></div>
                 <div><Label>Grace (days)</Label><Input type="number" value={tenantForm.grace_days} onChange={e => setTenantForm(f => ({ ...f, grace_days: parseInt(e.target.value) || 7 }))} /></div>
               </div>
               <div><Label>Notes</Label><Input value={tenantForm.notes} onChange={e => setTenantForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" /></div>
-              <Button onClick={() => createTenant.mutate()} disabled={!tenantForm.name || !tenantForm.owner_email} className="w-full">Create Tenant</Button>
+              <Button onClick={() => createTenant.mutate()} disabled={!tenantForm.name || !tenantForm.owner_email || !tenantForm.temp_password || tenantForm.temp_password.length < 6} className="w-full">
+                Create Salon Admin Account
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
