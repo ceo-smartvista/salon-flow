@@ -26,7 +26,7 @@ const navItems = [
   { to: "/calendar", icon: Calendar, label: "Calendar" },
   { to: "/clients", icon: Users, label: "Clients" },
   { to: "/pos", icon: ShoppingCart, label: "Checkout" },
-  { to: "/inventory", icon: Package, label: "Inventory" },
+  { to: "/catalog", icon: Package, label: "Catalog" },
   { to: "/portfolio", icon: Camera, label: "Portfolio" },
   { to: "/memberships", icon: Crown, label: "Memberships" },
   { to: "/offpeak", icon: Clock, label: "Off-Peak" },
