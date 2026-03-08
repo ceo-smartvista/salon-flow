@@ -106,6 +106,15 @@ function SalonTab() {
         <div><p className="text-sm font-medium">Online Booking</p><p className="text-xs text-muted-foreground">Allow clients to book via your public page</p></div>
         <Switch checked={s.online_booking} onCheckedChange={(v) => update("online_booking", v)} />
       </div>
+      {s.online_booking && (
+        <div className="bg-muted rounded-lg p-3">
+          <p className="text-xs font-medium text-muted-foreground mb-1">Your public booking link:</p>
+          <div className="flex items-center gap-2">
+            <code className="text-sm font-mono text-primary flex-1 truncate">{window.location.origin}/book</code>
+            <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/book`); toast({ title: "Link copied!" }); }}>Copy</Button>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div><p className="text-sm font-medium">WhatsApp Reminders</p><p className="text-xs text-muted-foreground">Send automated booking confirmations</p></div>
         <Switch checked={s.whatsapp_reminders} onCheckedChange={(v) => update("whatsapp_reminders", v)} />
